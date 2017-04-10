@@ -1,12 +1,12 @@
 /**
  * jira-client - a simple JIRA REST client
  * Copyright (c) 2013 Bob Carroll (bob.carroll@alum.rit.edu)
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
-
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package net.rcarz.jiraclient;
 
 import java.io.ByteArrayOutputStream;
@@ -31,12 +30,15 @@ import net.sf.json.JSONObject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Represents an issue attachment.
  */
 public class Attachment extends Resource {
 
+    private static final Logger LOGGER = Logger.getLogger(Attachment.class);
     private User author = null;
     private String filename = null;
     private Date created = null;
@@ -53,8 +55,9 @@ public class Attachment extends Resource {
     protected Attachment(RestClient restclient, JSONObject json) {
         super(restclient);
 
-        if (json != null)
+        if (json != null) {
             deserialise(json);
+        }
     }
 
     private void deserialise(JSONObject json) {
@@ -81,7 +84,7 @@ public class Attachment extends Resource {
      * @throws JiraException when the retrieval fails
      */
     public static Attachment get(RestClient restclient, String id)
-        throws JiraException {
+            throws JiraException {
 
         JSON result = null;
 
@@ -91,12 +94,13 @@ public class Attachment extends Resource {
             throw new JiraException("Failed to retrieve attachment " + id, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (!(result instanceof JSONObject)) {
             throw new JiraException("JSON payload is malformed");
+        }
 
-        return new Attachment(restclient, (JSONObject)result);
+        return new Attachment(restclient, (JSONObject) result);
     }
-    
+
     /**
      * Downloads attachment to byte array
      *
@@ -104,26 +108,37 @@ public class Attachment extends Resource {
      *
      * @throws JiraException when the download fails
      */
-    public byte[] download() 
-    	throws JiraException{
-    	ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    	try{
-        	HttpGet get = new HttpGet(content);
-        	HttpResponse response = restclient.getHttpClient().execute(get);
-        	HttpEntity entity = response.getEntity();
-        	if (entity != null) {
-        	    InputStream inputStream = entity.getContent();
-        	    int next = inputStream.read();
-        	    while (next > -1) {
-        	        bos.write(next);
-        	        next = inputStream.read();
-        	    }
-        	    bos.flush();
-        	}
-    	}catch(IOException e){
-    		  throw new JiraException(String.format("Failed downloading attachment from %s: %s", this.content, e.getMessage()));
-    	}
-    	return bos.toByteArray();
+    public byte[] download()
+            throws JiraException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        final HttpGet get;
+        final HttpResponse response;
+        HttpEntity entity = null;
+        try {
+            get = new HttpGet(content);
+            response = restclient.getHttpClient().execute(get);
+            entity = response.getEntity();
+            if (entity != null) {
+                InputStream inputStream = entity.getContent();
+                int next = inputStream.read();
+                while (next > -1) {
+                    bos.write(next);
+                    next = inputStream.read();
+                }
+                bos.flush();
+            }
+        } catch (IOException e) {
+            throw new JiraException(String.format("Failed downloading attachment from %s: %s", this.content, e.getMessage()), e);
+        } finally {
+            try {
+                if (entity != null) {
+                    EntityUtils.consume(entity);
+                }
+            } catch (IOException ex) {
+                LOGGER.error(ex.getMessage(), ex);
+            }
+        }
+        return bos.toByteArray();
     }
 
     @Override
@@ -155,4 +170,3 @@ public class Attachment extends Resource {
         return size;
     }
 }
-

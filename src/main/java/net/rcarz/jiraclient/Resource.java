@@ -25,7 +25,7 @@ package net.rcarz.jiraclient;
 public abstract class Resource {
 
     public static final String DEFAULT_API_REV = "latest";
-    public static String apirev = DEFAULT_API_REV;
+    public static final String APIREV = DEFAULT_API_REV;
 
     protected RestClient restclient = null;
     protected String id = null;
@@ -44,28 +44,21 @@ public abstract class Resource {
      * Gets the JIRA REST API revision number.
      */
     public static String getApiRev() {
-        return apirev;
-    }
-
-    /**
-     * Sets the JIRA REST API revision number.
-     */
-    public static void setApiRev(String apirev) {
-        Resource.apirev = apirev;
+        return APIREV;
     }
 
     /**
      * Resource base URI with API revision number.
      */
     public static String getBaseUri() {
-        return String.format("/rest/api/%s/", apirev);
+        return String.format("/rest/api/%s/", APIREV);
     }
 
     /**
      * Resource base URI with API revision number.
      */
     public static String getAuthUri() {
-        return String.format("/rest/auth/%s/", apirev);
+        return String.format("/rest/auth/%s/", APIREV);
     }
 
     /**
