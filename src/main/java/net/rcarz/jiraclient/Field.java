@@ -19,8 +19,6 @@
 
 package net.rcarz.jiraclient;
 
-import java.lang.Iterable;
-import java.lang.UnsupportedOperationException;
 import java.sql.Timestamp;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -43,21 +41,21 @@ public final class Field {
      * Field metadata structure.
      */
     public static final class Meta {
-        public boolean required;
-        public String type;
-        public String items;
-        public String name;
-        public String system;
-        public String custom;
-        public int customId;
+        private boolean required;
+        private String type;
+        private String items;
+        private String name;
+        private String system;
+        private String custom;
+        private int customId;
     }
 
     /**
      * Field update operation.
      */
     public static final class Operation {
-        public String name;
-        public Object value;
+        private String name;
+        private Object value;
 
         /**
          * Initialises a new update operation.
